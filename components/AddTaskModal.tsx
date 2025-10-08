@@ -13,8 +13,8 @@ interface AddTaskModalProps {
 }
 
 export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, mode = 'add', initialTask }) => {
-  const staff = useLiveQuery(() => db.staff.where('isActive').equals(1).toArray(), []);
-  const projects = useLiveQuery(() => db.projects.toArray(), []);
+  const staff = useLiveQuery(() => db.staff.where('isActive').equals(true).toArray(), []);
+  const projects = useLiveQuery(() => db.projects.where('status').equals('Active').toArray(), []);
   const [task, setTask] = useState<Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'creatorId'>>({
     title: '',
     description: '',
@@ -120,7 +120,7 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, mode = 'add
                         <option value="">Unassigned</option>
                         {staff?.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                     </select>
-                    <button type="button" onClick={handleSuggestAssignee} disabled={isSuggesting || !task.description} className="p-2 bg-[--accent-green] text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                    <button type="button" onClick={handleSuggestAssignee} disabled={isSuggesting || !task.description} className="p-2 bg-[--accent-green] text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed" title="Suggest assignee with AI">
                         {isSuggesting ? '...' : <AILogo className="w-5 h-5" />}
                     </button>
                 </div>

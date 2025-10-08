@@ -293,11 +293,12 @@ const ProjectCard: React.FC<{ project: Project; uploadingProjectId: number | nul
 
       <div>
         <h4 className="font-semibold mb-2">Attachments ({attachments?.length || 0})</h4>
-        <div className="space-y-2">
-          {attachments?.map(att => (
-            <AttachmentRow key={att.id} attachment={att} onDelete={() => handleDeleteAttachment(att.id)} />
-          ))}
-          {attachments && attachments.length === 0 && (
+        <div>
+          {attachments && attachments.length > 0 ? (
+            <div className="text-sm text-[--text] break-words">
+              {attachments.map(a => a.name).join(', ')}
+            </div>
+          ) : (
             <div className="text-sm text-[--text]/60">No attachments yet.</div>
           )}
         </div>
@@ -306,38 +307,6 @@ const ProjectCard: React.FC<{ project: Project; uploadingProjectId: number | nul
   );
 };
 
-const AttachmentRow: React.FC<{ attachment: Attachment; onDelete: () => void }> = ({ attachment, onDelete }) => {
-  const isImage = attachment.type.startsWith('image/');
-  const objectUrl = useMemo(() => URL.createObjectURL(attachment.data), [attachment.data]);
-
-  // Revoke object URL to prevent memory leaks when the component unmounts or blob changes
-  useEffect(() => {
-    return () => {
-      try {
-        URL.revokeObjectURL(objectUrl);
-      } catch {}
-    };
-  }, [objectUrl]);
-
-  return (
-    <div className="flex items-center justify-between bg-[--secondary-green] rounded p-2">
-      <div className="flex items-center space-x-3">
-        {isImage ? (
-          <img src={objectUrl} alt={attachment.name} className="w-12 h-12 object-cover rounded" />
-        ) : (
-          <div className="w-12 h-12 flex items-center justify-center rounded bg-[--card] border border-[--border] text-xs">{attachment.type || 'file'}</div>
-        )}
-        <div>
-          <div className="text-sm font-medium">{attachment.name}</div>
-          <div className="text-xs text-[--text]/60">{(attachment.size / 1024).toFixed(1)} KB • {new Date(attachment.createdAt).toLocaleString()}</div>
-        </div>
-      </div>
-      <div className="flex items-center space-x-2">
-        <a href={objectUrl} download={attachment.name} className="px-3 py-1 text-sm rounded bg-[--primary-green] text-[--primary-foreground] hover:opacity-90">Download</a>
-        <button onClick={onDelete} className="px-3 py-1 text-sm rounded bg-red-500 text-white hover:opacity-90">Delete</button>
-      </div>
-    </div>
-  );
-};
+// Simplified attachments view now shows a comma-separated list of filenames only.
 
 export default ProjectsManagement;

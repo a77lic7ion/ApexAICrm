@@ -146,7 +146,8 @@ export const StaffManagement: React.FC = () => {
                 alt={member.name}
                 className="w-16 h-16 rounded-full border-4"
                 className="w-16 h-16 rounded-full border-4"
-                style={{ borderColor: getStaffColor(member.id) }}
+style={{ borderColor: getStaffColor(member.id) }}
+
 
 
 
@@ -157,6 +158,7 @@ export const StaffManagement: React.FC = () => {
 
 
               />
+
 
 
 

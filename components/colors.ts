@@ -1,6 +1,6 @@
 export const priorityColors: Record<string, string> = {
-  Low: '#6b7280', // Gray
-  Medium: '#3b82f6', // Blue
+  Low: '#7CCF35', // Palette green500
+  Medium: '#497D15', // Palette green700
   High: '#f59e0b', // Amber
   Urgent: '#ef4444', // Red
 };
@@ -31,4 +31,19 @@ export const hexWithOpacity = (hex: string, alpha = 0.2) => {
   const g = parseInt(sanitized.substring(2, 4), 16);
   const b = parseInt(sanitized.substring(4, 6), 16);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
+// Export requested palette for reuse
+export const Palette = {
+  green50:  '#F7FEE7',
+  green100: '#ECFCCA',
+  green200: '#D8F999',
+  green300: '#BBF451',
+  green400: '#9AE630',
+  green500: '#7CCF35',
+  green600: '#5EA529',
+  green700: '#497D15',
+  green800: '#3C6301',
+  green900: '#35530E',
+  green950: '#192E03',
 };

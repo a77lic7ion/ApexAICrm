@@ -6,8 +6,7 @@ import { Dashboard } from './components/Dashboard';
 import { StaffManagement } from './components/StaffManagement';
 import { TaskManagement } from './components/TaskManagement';
 import { ProjectsManagement } from './components/ProjectsManagement';
-import { ThemeProvider, useTheme } from './hooks/useTheme';
-import ThemeSwitcher from './components/ThemeSwitcher';
+// Removed theme provider and switcher to use static branding colors/fonts
 
 const App: React.FC = () => {
     useEffect(() => {
@@ -15,26 +14,23 @@ const App: React.FC = () => {
     }, []);
 
     return (
-        <ThemeProvider>
-            <HashRouter>
-                <Routes>
-                    <Route path="/" element={<Layout />}>
-                        <Route index element={<Dashboard />} />
-                        <Route path="tasks" element={<TaskManagement />} />
-                        <Route path="staff" element={<StaffManagement />} />
-                        <Route path="projects" element={<ProjectsManagement />} />
-                    </Route>
-                </Routes>
-            </HashRouter>
-        </ThemeProvider>
+        <HashRouter>
+            <Routes>
+                <Route path="/" element={<Layout />}>
+                    <Route index element={<Dashboard />} />
+                    <Route path="tasks" element={<TaskManagement />} />
+                    <Route path="staff" element={<StaffManagement />} />
+                    <Route path="projects" element={<ProjectsManagement />} />
+                </Route>
+            </Routes>
+        </HashRouter>
     );
 };
 
 
 const Layout: React.FC = () => {
-    const { theme } = useTheme();
     return (
-        <div className={`flex flex-col h-screen bg-[--background] text-[--text] transition-colors duration-300 ${theme}`}>
+        <div className={`flex flex-col h-screen bg-[--background] text-[--text]`}>
             <Navbar />
             <main className="flex-1 overflow-y-auto">
                 <Outlet />
@@ -55,9 +51,7 @@ const Navbar: React.FC = () => {
                     <NavbarLink to="/staff" icon={<StaffIcon />} label="Staff" />
                 </nav>
             </div>
-            <div className="flex items-center">
-                <ThemeSwitcher />
-            </div>
+            <div className="flex items-center" />
         </header>
     );
 };

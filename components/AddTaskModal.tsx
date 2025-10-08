@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../services/db';
 import { suggestAssignee } from '../services/geminiService';
@@ -8,9 +8,11 @@ import { AILogo } from './icons';
 
 interface AddTaskModalProps {
   onClose: () => void;
+  mode?: 'add' | 'edit';
+  initialTask?: Task;
 }
 
-export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose }) => {
+export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, mode = 'add', initialTask }) => {
   const staff = useLiveQuery(() => db.staff.where('isActive').equals(1).toArray(), []);
   const [task, setTask] = useState<Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'creatorId'>>({
     title: '',
@@ -19,6 +21,22 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose }) => {
     priority: TaskPriority.Medium,
   });
   const [isSuggesting, setIsSuggesting] = useState(false);
+
+  useEffect(() => {
+    if (mode === 'edit' && initialTask) {
+      setTask({
+        title: initialTask.title,
+        description: initialTask.description,
+        status: initialTask.status,
+        priority: initialTask.priority,
+        assigneeId: initialTask.assigneeId,
+        projectId: initialTask.projectId,
+        dueDate: initialTask.dueDate,
+        tags: initialTask.tags,
+        color: initialTask.color,
+      } as any);
+    }
+  }, [mode, initialTask]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -42,33 +60,57 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await db.tasks.add({
-      ...task,
-      creatorId: 1, // Hardcoded creator
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    if (mode === 'edit' && initialTask?.id) {
+      await db.tasks.update(initialTask.id, {
+        ...task,
+        updatedAt: new Date(),
+      });
+    } else {
+      await db.tasks.add({
+        ...task,
+        creatorId: 1, // Hardcoded creator
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    }
     onClose();
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
       <div className="bg-[--card] rounded-lg shadow-xl p-8 w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
-        <h2 className="text-2xl font-bold mb-6 text-[--card-foreground]">Add New Task</h2>
+        <h2 className="text-2xl font-bold mb-6 text-[--card-foreground]">{mode === 'edit' ? 'Edit Task' : 'Add New Task'}</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block mb-1 font-medium">Title</label>
-            <input name="title" value={task.title} onChange={handleInputChange} className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" required />
+            <input
+              name="title"
+              value={task.title}
+              onChange={handleInputChange}
+              className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]"
+              placeholder="Enter task title"
+              title="Task title"
+              required
+            />
           </div>
           <div>
             <label className="block mb-1 font-medium">Description</label>
-            <textarea name="description" value={task.description} onChange={handleInputChange} rows={4} className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" required />
+            <textarea
+              name="description"
+              value={task.description}
+              onChange={handleInputChange}
+              rows={4}
+              className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]"
+              placeholder="Enter task description"
+              title="Task description"
+              required
+            />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
                 <label className="block mb-1 font-medium">Assignee</label>
                 <div className="flex items-center space-x-2">
-                    <select name="assigneeId" value={task.assigneeId || ''} onChange={handleAssigneeChange} className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]">
+                    <select name="assigneeId" value={task.assigneeId || ''} onChange={handleAssigneeChange} className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" title="Assignee">
                         <option value="">Unassigned</option>
                         {staff?.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                     </select>
@@ -79,7 +121,7 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose }) => {
             </div>
             <div>
               <label className="block mb-1 font-medium">Status</label>
-              <select name="status" value={task.status} onChange={handleInputChange} className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]">
+              <select name="status" value={task.status} onChange={handleInputChange} className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" title="Status">
                 {Object.values(TaskStatus).map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
@@ -87,18 +129,25 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose }) => {
            <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block mb-1 font-medium">Priority</label>
-              <select name="priority" value={task.priority} onChange={handleInputChange} className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]">
+              <select name="priority" value={task.priority} onChange={handleInputChange} className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" title="Priority">
                 {Object.values(TaskPriority).map(p => <option key={p} value={p}>{p}</option>)}
               </select>
             </div>
             <div>
                 <label className="block mb-1 font-medium">Due Date</label>
-                <input type="date" name="dueDate" onChange={e => setTask(p => ({...p, dueDate: e.target.valueAsDate || undefined}))} className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" />
+                <input
+                  type="date"
+                  name="dueDate"
+                  onChange={e => setTask(p => ({...p, dueDate: e.target.valueAsDate || undefined}))}
+                  className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]"
+                  title="Due date"
+                  placeholder="Select due date"
+                />
             </div>
            </div>
           <div className="flex justify-end space-x-4 pt-4">
             <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg bg-[--secondary-green] hover:opacity-80">Cancel</button>
-            <button type="submit" className="px-4 py-2 bg-[--primary-green] text-[--primary-foreground] rounded-lg hover:opacity-90">Create Task</button>
+            <button type="submit" className="px-4 py-2 bg-[--primary-green] text-[--primary-foreground] rounded-lg hover:opacity-90">{mode === 'edit' ? 'Save Changes' : 'Create Task'}</button>
           </div>
         </form>
       </div>

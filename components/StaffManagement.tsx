@@ -14,6 +14,14 @@ export const StaffManagement: React.FC = () => {
     isActive: true,
   });
   const [showForm, setShowForm] = useState(false);
+  const [editingMember, setEditingMember] = useState<Staff | null>(null);
+  const [editStaff, setEditStaff] = useState<Omit<Staff, 'id' | 'createdAt' | 'updatedAt'>>({
+    name: '',
+    email: '',
+    role: '',
+    skills: [],
+    isActive: true,
+  });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -36,6 +44,44 @@ export const StaffManagement: React.FC = () => {
     setShowForm(false);
   };
 
+  const startEdit = (member: Staff) => {
+    setEditingMember(member);
+    setEditStaff({
+      name: member.name,
+      email: member.email,
+      role: member.role,
+      skills: member.skills,
+      isActive: member.isActive,
+    });
+  };
+
+  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setEditStaff(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditSkillsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const skills = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+    setEditStaff(prev => ({ ...prev, skills }));
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMember?.id) return;
+    await db.staff.update(editingMember.id, {
+      ...editStaff,
+      updatedAt: new Date(),
+    });
+    setEditingMember(null);
+  };
+
+  const handleDelete = async (id?: number) => {
+    if (!id) return;
+    const confirmed = window.confirm('Delete this staff member?');
+    if (!confirmed) return;
+    await db.staff.delete(id);
+  };
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -54,7 +100,29 @@ export const StaffManagement: React.FC = () => {
           <input name="email" type="email" value={newStaff.email} onChange={handleInputChange} placeholder="Email" className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" required />
           <input name="role" value={newStaff.role} onChange={handleInputChange} placeholder="Role" className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" required />
           <input name="skills" onChange={handleSkillsChange} placeholder="Skills (comma-separated)" className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" />
+          <label className="inline-flex items-center space-x-2 text-sm">
+            <input type="checkbox" checked={newStaff.isActive} onChange={e => setNewStaff(prev => ({ ...prev, isActive: e.target.checked }))} />
+            <span>Active</span>
+          </label>
           <button type="submit" className="px-4 py-2 bg-[--accent-green] text-white rounded-lg">Add Member</button>
+        </form>
+      )}
+
+      {editingMember && (
+        <form onSubmit={handleEditSubmit} className="mb-6 p-4 bg-[--card] border border-[--border] rounded-lg space-y-4">
+          <h2 className="text-xl font-semibold">Edit Staff</h2>
+          <input name="name" value={editStaff.name} onChange={handleEditInputChange} placeholder="Name" className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" required />
+          <input name="email" type="email" value={editStaff.email} onChange={handleEditInputChange} placeholder="Email" className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" required />
+          <input name="role" value={editStaff.role} onChange={handleEditInputChange} placeholder="Role" className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" required />
+          <input name="skills" value={editStaff.skills.join(', ')} onChange={handleEditSkillsChange} placeholder="Skills (comma-separated)" className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" />
+          <label className="inline-flex items-center space-x-2 text-sm">
+            <input type="checkbox" checked={editStaff.isActive} onChange={e => setEditStaff(prev => ({ ...prev, isActive: e.target.checked }))} />
+            <span>Active</span>
+          </label>
+          <div className="flex space-x-3">
+            <button type="button" onClick={() => setEditingMember(null)} className="px-4 py-2 rounded-lg bg-[--secondary-green] hover:opacity-80">Cancel</button>
+            <button type="submit" className="px-4 py-2 bg-[--primary-green] text-[--primary-foreground] rounded-lg hover:opacity-90">Save Changes</button>
+          </div>
         </form>
       )}
 
@@ -70,6 +138,10 @@ export const StaffManagement: React.FC = () => {
                 {member.skills.map(skill => (
                   <span key={skill} className="text-xs bg-[--secondary-green] px-2 py-1 rounded-full">{skill}</span>
                 ))}
+              </div>
+              <div className="mt-3 flex space-x-2">
+                <button onClick={() => startEdit(member)} className="px-3 py-1 text-sm rounded bg-[--secondary-green] hover:opacity-80">Edit</button>
+                <button onClick={() => handleDelete(member.id)} className="px-3 py-1 text-sm rounded bg-red-500 text-white hover:opacity-90">Delete</button>
               </div>
             </div>
           </div>

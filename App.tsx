@@ -5,6 +5,7 @@ import { DashboardIcon, TasksIcon, StaffIcon, ProjectsIcon } from './components/
 import { Dashboard } from './components/Dashboard';
 import { StaffManagement } from './components/StaffManagement';
 import { TaskManagement } from './components/TaskManagement';
+import { ProjectsManagement } from './components/ProjectsManagement';
 import { ThemeProvider, useTheme } from './hooks/useTheme';
 import ThemeSwitcher from './components/ThemeSwitcher';
 
@@ -21,12 +22,7 @@ const App: React.FC = () => {
                         <Route index element={<Dashboard />} />
                         <Route path="tasks" element={<TaskManagement />} />
                         <Route path="staff" element={<StaffManagement />} />
-                         <Route path="projects" element={
-                            <div className="p-6">
-                                <h1 className="text-2xl font-bold">Projects</h1>
-                                <p>Projects section is under construction.</p>
-                            </div>
-                        } />
+                        <Route path="projects" element={<ProjectsManagement />} />
                     </Route>
                 </Routes>
             </HashRouter>

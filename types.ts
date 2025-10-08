@@ -56,3 +56,13 @@ export interface Project {
     clientName?: string;
     budget?: number;
 }
+
+export interface Attachment {
+    id?: number;
+    projectId: number;
+    name: string;
+    type: string; // MIME type
+    size: number; // bytes
+    data: Blob;   // stored binary
+    createdAt: Date;
+}

@@ -8,6 +8,7 @@ import { CalendarIcon } from './icons';
 export const TaskManagement: React.FC = () => {
     const tasks = useLiveQuery(() => db.tasks.toArray(), []);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedTask, setSelectedTask] = useState<Task | null>(null);
     
     const staff = useLiveQuery(() => db.staff.toArray(), []);
     const staffMap = React.useMemo(() => {
@@ -26,12 +27,19 @@ export const TaskManagement: React.FC = () => {
         }, {} as Record<TaskStatus, Task[]>);
     }, [tasks]);
 
+    const handleDeleteTask = async (id?: number) => {
+        if (!id) return;
+        const confirmed = window.confirm('Delete this task?');
+        if (!confirmed) return;
+        await db.tasks.delete(id);
+    };
+
     return (
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold">Task Management</h1>
                 <button
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => { setSelectedTask(null); setIsModalOpen(true); }}
                     className="px-4 py-2 bg-[--primary-green] text-[--primary-foreground] rounded-lg hover:opacity-90 transition-opacity"
                 >
                     + Add Task
@@ -67,6 +75,10 @@ export const TaskManagement: React.FC = () => {
                                             </div>
                                         )}
                                     </div>
+                                    <div className="mt-3 flex space-x-2">
+                                        <button onClick={() => { setSelectedTask(task); setIsModalOpen(true); }} className="px-3 py-1 text-sm rounded bg-[--secondary-green] hover:opacity-80">Edit</button>
+                                        <button onClick={() => handleDeleteTask(task.id)} className="px-3 py-1 text-sm rounded bg-red-500 text-white hover:opacity-90">Delete</button>
+                                    </div>
                                 </div>
                                 );
                             })}
@@ -75,7 +87,7 @@ export const TaskManagement: React.FC = () => {
                 ))}
             </div>
 
-            {isModalOpen && <AddTaskModal onClose={() => setIsModalOpen(false)} />}
+            {isModalOpen && <AddTaskModal onClose={() => setIsModalOpen(false)} mode={selectedTask ? 'edit' : 'add'} initialTask={selectedTask ?? undefined} />}
         </div>
     );
 };

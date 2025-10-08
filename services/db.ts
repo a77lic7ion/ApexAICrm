@@ -1,10 +1,11 @@
 import { Dexie, type Table } from 'dexie';
-import { Staff, Task, Project, TaskStatus, TaskPriority } from '../types';
+import { Staff, Task, Project, TaskStatus, TaskPriority, Attachment } from '../types';
 
 export class ApexCrmTaskDB extends Dexie {
   staff!: Table<Staff, number>;
   tasks!: Table<Task, number>;
   projects!: Table<Project, number>;
+  attachments!: Table<Attachment, number>;
 
   constructor() {
     super('ApexCrmTaskDB');
@@ -12,6 +13,12 @@ export class ApexCrmTaskDB extends Dexie {
       staff: '++id, name, email, role, *skills, isActive',
       tasks: '++id, title, assigneeId, creatorId, projectId, status, priority, dueDate',
       projects: '++id, name, status, startDate, endDate, clientName',
+    });
+    this.version(2).stores({
+      staff: '++id, name, email, role, *skills, isActive',
+      tasks: '++id, title, assigneeId, creatorId, projectId, status, priority, dueDate',
+      projects: '++id, name, status, startDate, endDate, clientName',
+      attachments: '++id, projectId, name, type, size, createdAt',
     });
   }
 }

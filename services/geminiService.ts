@@ -1,12 +1,19 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Staff } from '../types';
 
-// Fix: Initialize GoogleGenAI according to guidelines, assuming API_KEY is present.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Load API key from Vite env (browser-safe). Must be prefixed with VITE_
+const apiKey: string | undefined = (import.meta as any).env?.VITE_GENAI_API_KEY;
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 export async function suggestAssignee(taskDescription: string, staffList: Staff[]): Promise<number | null> {
     // Fix: Removed check for process.env.API_KEY as per guidelines.
     if (!taskDescription || staffList.length === 0) {
+        return null;
+    }
+
+    // Gracefully skip AI suggestion if API key is missing
+    if (!ai) {
+        console.warn("Gemini API key missing (VITE_GENAI_API_KEY). Skipping AI suggestion.");
         return null;
     }
 

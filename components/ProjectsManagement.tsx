@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../services/db';
 import { Project, Attachment } from '../types';
@@ -221,6 +221,8 @@ export const ProjectsManagement: React.FC = () => {
               const confirmed = window.confirm('Delete this project and its attachments?');
               if (!confirmed) return;
               await db.attachments.where('projectId').equals(project.id).delete();
+              // Also delete all tasks associated with this project to prevent orphaned tasks
+              await db.tasks.where('projectId').equals(project.id).delete();
               await db.projects.delete(project.id);
             }}
           />
@@ -307,6 +309,15 @@ const ProjectCard: React.FC<{ project: Project; uploadingProjectId: number | nul
 const AttachmentRow: React.FC<{ attachment: Attachment; onDelete: () => void }> = ({ attachment, onDelete }) => {
   const isImage = attachment.type.startsWith('image/');
   const objectUrl = useMemo(() => URL.createObjectURL(attachment.data), [attachment.data]);
+
+  // Revoke object URL to prevent memory leaks when the component unmounts or blob changes
+  useEffect(() => {
+    return () => {
+      try {
+        URL.revokeObjectURL(objectUrl);
+      } catch {}
+    };
+  }, [objectUrl]);
 
   return (
     <div className="flex items-center justify-between bg-[--secondary-green] rounded p-2">

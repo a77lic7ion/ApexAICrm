@@ -80,6 +80,8 @@ export const StaffManagement: React.FC = () => {
     if (!id) return;
     const confirmed = window.confirm('Delete this staff member?');
     if (!confirmed) return;
+    // Unassign tasks assigned to this staff to avoid dangling references
+    await db.tasks.where('assigneeId').equals(id).modify({ assigneeId: undefined });
     await db.staff.delete(id);
   };
 
@@ -134,10 +136,40 @@ export const StaffManagement: React.FC = () => {
               <img
                 src={member.avatar || `https://i.pravatar.cc/100?u=${member.email}`}
                 alt={member.name}
+                className="w-16 h-16 rounded-full border-4 avatar-border"
+                data-staff-id={member.id}
+              />
+
+
+
+                src={member.avatar || `https://i.pravatar.cc/100?u=${member.email}`}
+                alt={member.name}
+                className="w-16 h-16 rounded-full border-4"
                 className="w-16 h-16 rounded-full border-4"
                 style={{ borderColor: getStaffColor(member.id) }}
+
+
+
+
+
+
+
+
+
               />
-              <span className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full" style={{ backgroundColor: getStaffColor(member.id) }} />
+
+
+
+
+
+
+
+
+
+
+
+
+              <span className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full staff-dot" data-staff-id={member.id} />
             </div>
             <div>
               <h3 className="font-bold text-lg">{member.name}</h3>

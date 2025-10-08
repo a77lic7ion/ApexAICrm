@@ -13,7 +13,7 @@ interface AddTaskModalProps {
 }
 
 export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, mode = 'add', initialTask }) => {
-  const staff = useLiveQuery(() => db.staff.where('isActive').equals(true).toArray(), []);
+  const staff = useLiveQuery(() => db.staff.where('isActive').equals(1).toArray(), []);
   const projects = useLiveQuery(() => db.projects.toArray(), []);
   const [task, setTask] = useState<Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'creatorId'>>({
     title: '',

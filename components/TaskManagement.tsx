@@ -3,11 +3,30 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../services/db';
 import { Task, TaskStatus } from '../types';
 import { AddTaskModal } from './AddTaskModal';
+import { EditTaskModal } from './EditTaskModal';
 import { CalendarIcon } from './icons';
+import { TbEdit, TbTrash } from 'react-icons/tb';
 
 export const TaskManagement: React.FC = () => {
     const tasks = useLiveQuery(() => db.tasks.toArray(), []);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
+    const handleEditClick = (task: Task) => {
+        setSelectedTask(task);
+        setIsEditModalOpen(true);
+    };
+
+    const handleDeleteClick = async (taskId: number) => {
+        if (window.confirm('Are you sure you want to delete this task?')) {
+            try {
+                await db.tasks.delete(taskId);
+            } catch (error) {
+                console.error("Failed to delete task:", error);
+            }
+        }
+    };
     
     const staff = useLiveQuery(() => db.staff.toArray(), []);
     const staffMap = React.useMemo(() => {
@@ -31,7 +50,7 @@ export const TaskManagement: React.FC = () => {
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold">Task Management</h1>
                 <button
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => setIsAddModalOpen(true)}
                     className="px-4 py-2 bg-[--primary-green] text-[--primary-foreground] rounded-lg hover:opacity-90 transition-opacity"
                 >
                     + Add Task
@@ -51,7 +70,13 @@ export const TaskManagement: React.FC = () => {
 
                                 return (
                                 <div key={task.id} className="bg-[--card] border border-[--border] rounded-lg p-3">
-                                    <h3 className="font-semibold">{task.title}</h3>
+                                    <div className="flex justify-between items-start">
+                                        <h3 className="font-semibold break-all pr-2">{task.title}</h3>
+                                        <div className="flex space-x-1 shrink-0">
+                                            <button onClick={() => handleEditClick(task)} className="p-1 hover:bg-[--accent-green]/20 rounded"><TbEdit /></button>
+                                            <button onClick={() => handleDeleteClick(task.id!)} className="p-1 hover:bg-red-500/20 rounded"><TbTrash /></button>
+                                        </div>
+                                    </div>
                                     <p className="text-sm text-[--text]/70 mt-1 break-words">{task.description}</p>
                                     <div className="mt-3 flex items-center justify-between">
                                         <div className="flex items-center space-x-2">
@@ -75,7 +100,13 @@ export const TaskManagement: React.FC = () => {
                 ))}
             </div>
 
-            {isModalOpen && <AddTaskModal onClose={() => setIsModalOpen(false)} />}
+            {isAddModalOpen && <AddTaskModal onClose={() => setIsAddModalOpen(false)} />}
+            {isEditModalOpen && selectedTask && (
+                <EditTaskModal task={selectedTask} onClose={() => {
+                    setIsEditModalOpen(false);
+                    setSelectedTask(null);
+                }} />
+            )}
         </div>
     );
 };

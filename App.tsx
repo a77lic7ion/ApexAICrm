@@ -21,12 +21,7 @@ const App: React.FC = () => {
                         <Route index element={<Dashboard />} />
                         <Route path="tasks" element={<TaskManagement />} />
                         <Route path="staff" element={<StaffManagement />} />
-                         <Route path="projects" element={
-                            <div className="p-6">
-                                <h1 className="text-2xl font-bold">Projects</h1>
-                                <p>Projects section is under construction.</p>
-                            </div>
-                        } />
+                        <Route path="projects" element={<ProjectManagement />} />
                     </Route>
                 </Routes>
             </HashRouter>

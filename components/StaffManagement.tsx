@@ -3,17 +3,22 @@ import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../services/db';
 import { Staff } from '../types';
+import { EditStaffModal } from './EditStaffModal';
+import { TbEdit, TbTrash } from 'react-icons/tb';
 
 export const StaffManagement: React.FC = () => {
   const staff = useLiveQuery(() => db.staff.toArray(), []);
-  const [newStaff, setNewStaff] = useState<Omit<Staff, 'id' | 'createdAt' | 'updatedAt'>>({
+  const [newStaff, setNewStaff] = useState<Omit<Staff, 'id' | 'createdAt' | 'updatedAt' | 'avatar'>>({
     name: '',
     email: '',
     role: '',
     skills: [],
     isActive: true,
   });
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -25,15 +30,48 @@ export const StaffManagement: React.FC = () => {
     setNewStaff(prev => ({ ...prev, skills }));
   };
 
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      setAvatarFile(e.target.files[0]);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    let avatar: string | undefined;
+    if (avatarFile) {
+        avatar = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(avatarFile);
+        });
+    }
+
     await db.staff.add({
       ...newStaff,
+      avatar,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
     setNewStaff({ name: '', email: '', role: '', skills: [], isActive: true });
+    setAvatarFile(null);
     setShowForm(false);
+  };
+
+  const handleEditClick = (staffMember: Staff) => {
+    setSelectedStaff(staffMember);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDeleteClick = async (staffId: number) => {
+    if (window.confirm('Are you sure you want to delete this staff member? They will be unassigned from all tasks.')) {
+        try {
+            await db.tasks.where({ assigneeId: staffId }).modify({ assigneeId: undefined });
+            await db.staff.delete(staffId);
+        } catch (error) {
+            console.error("Failed to delete staff member:", error);
+        }
+    }
   };
 
   return (
@@ -54,27 +92,43 @@ export const StaffManagement: React.FC = () => {
           <input name="email" type="email" value={newStaff.email} onChange={handleInputChange} placeholder="Email" className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" required />
           <input name="role" value={newStaff.role} onChange={handleInputChange} placeholder="Role" className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" required />
           <input name="skills" onChange={handleSkillsChange} placeholder="Skills (comma-separated)" className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" />
+          <div>
+            <label className="block text-sm font-medium mb-1">Avatar (Optional)</label>
+            <input type="file" accept="image/*" onChange={handleAvatarChange} className="w-full text-sm" />
+          </div>
           <button type="submit" className="px-4 py-2 bg-[--accent-green] text-white rounded-lg">Add Member</button>
         </form>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {staff?.map(member => (
-          <div key={member.id} className="bg-[--card] border border-[--border] rounded-lg p-4 flex items-center space-x-4">
-            <img src={member.avatar || `https://i.pravatar.cc/100?u=${member.email}`} alt={member.name} className="w-16 h-16 rounded-full" />
-            <div>
-              <h3 className="font-bold text-lg">{member.name}</h3>
-              <p className="text-sm text-[--text]/80">{member.role}</p>
-              <p className="text-sm text-[--text]/60">{member.email}</p>
-               <div className="mt-2 flex flex-wrap gap-1">
-                {member.skills.map(skill => (
-                  <span key={skill} className="text-xs bg-[--secondary-green] px-2 py-1 rounded-full">{skill}</span>
-                ))}
-              </div>
+          <div key={member.id} className="bg-[--card] border border-[--border] rounded-lg p-4">
+            <div className="flex items-center space-x-4">
+                <img src={member.avatar || `https://i.pravatar.cc/100?u=${member.email}`} alt={member.name} className="w-16 h-16 rounded-full" />
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg">{member.name}</h3>
+                  <p className="text-sm text-[--text]/80">{member.role}</p>
+                  <p className="text-sm text-[--text]/60">{member.email}</p>
+                   <div className="mt-2 flex flex-wrap gap-1">
+                    {member.skills.map(skill => (
+                      <span key={skill} className="text-xs bg-[--secondary-green] px-2 py-1 rounded-full">{skill}</span>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex flex-col space-y-1">
+                    <button onClick={() => handleEditClick(member)} className="p-1 hover:bg-[--accent-green]/20 rounded"><TbEdit /></button>
+                    <button onClick={() => handleDeleteClick(member.id!)} className="p-1 hover:bg-red-500/20 rounded"><TbTrash /></button>
+                </div>
             </div>
           </div>
         ))}
       </div>
+      {isEditModalOpen && selectedStaff && (
+        <EditStaffModal staffMember={selectedStaff} onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedStaff(null);
+        }} />
+      )}
     </div>
   );
 };

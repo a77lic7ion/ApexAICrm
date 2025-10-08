@@ -6,6 +6,7 @@ export interface Staff {
   role: string;
   skills: string[]; // Stored as a string array
   avatar?: string;
+  color?: string;
   createdAt: Date;
   updatedAt: Date;
   isActive: boolean;
@@ -55,6 +56,7 @@ export interface Project {
     color?: string;
     clientName?: string;
     budget?: number;
+    ownerId?: number;
 }
 
 export interface Attachment {

@@ -47,3 +47,27 @@ export const Palette = {
   green900: '#35530E',
   green950: '#192E03',
 };
+
+// 20 bright, distinct colors for staff selection
+export const brightColors: string[] = [
+  '#FF3B30', // Bright Red
+  '#FF9500', // Orange
+  '#FFCC00', // Yellow
+  '#34C759', // Bright Green
+  '#30B0FF', // Sky Blue
+  '#007AFF', // Blue
+  '#5856D6', // Indigo
+  '#AF52DE', // Purple
+  '#FF2D55', // Pink
+  '#8E8E93', // Gray
+  '#00C7BE', // Turquoise
+  '#00A8E8', // Azure
+  '#2ECC71', // Emerald
+  '#E67E22', // Carrot
+  '#E74C3C', // Alizarin
+  '#9B59B6', // Amethyst
+  '#1ABC9C', // Teal
+  '#F1C40F', // Sunflower
+  '#3498DB', // Peter River
+  '#D35400', // Pumpkin
+];

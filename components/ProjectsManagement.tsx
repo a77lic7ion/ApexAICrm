@@ -5,6 +5,7 @@ import { Project, Attachment } from '../types';
 
 export const ProjectsManagement: React.FC = () => {
   const projects = useLiveQuery(() => db.projects.toArray(), []);
+  const staff = useLiveQuery(() => db.staff.filter(s => !!s.isActive).toArray(), []);
   const [uploadingProjectId, setUploadingProjectId] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [newProject, setNewProject] = useState<Omit<Project, 'id' | 'createdAt' | 'updatedAt'>>({
@@ -16,6 +17,7 @@ export const ProjectsManagement: React.FC = () => {
     color: '#3b82f6',
     clientName: '',
     budget: undefined,
+    ownerId: undefined,
   });
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [editProject, setEditProject] = useState<Omit<Project, 'id' | 'createdAt' | 'updatedAt'>>({
@@ -27,6 +29,7 @@ export const ProjectsManagement: React.FC = () => {
     color: '#3b82f6',
     clientName: '',
     budget: undefined,
+    ownerId: undefined,
   });
 
   const handleNewInput = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -62,6 +65,7 @@ export const ProjectsManagement: React.FC = () => {
       color: p.color,
       clientName: p.clientName,
       budget: p.budget,
+      ownerId: p.ownerId,
     });
   };
   const handleEditInput = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -74,6 +78,14 @@ export const ProjectsManagement: React.FC = () => {
   const handleEditBudget = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setEditProject(prev => ({ ...prev, budget: val ? parseFloat(val) : undefined }));
+  };
+  const handleNewOwner = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setNewProject(prev => ({ ...prev, ownerId: val ? parseInt(val) : undefined }));
+  };
+  const handleEditOwner = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setEditProject(prev => ({ ...prev, ownerId: val ? parseInt(val) : undefined }));
   };
   const submitEditProject = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,6 +156,15 @@ export const ProjectsManagement: React.FC = () => {
             <input name="clientName" value={newProject.clientName || ''} onChange={handleNewInput} placeholder="Client Name" className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" />
             <input name="budget" type="number" step="0.01" value={newProject.budget ?? ''} onChange={handleNewBudget} placeholder="Budget" className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" />
           </div>
+          <div>
+            <label className="block mb-1 font-medium">Assign to Staff</label>
+            <select name="ownerId" value={newProject.ownerId || ''} onChange={handleNewOwner} className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" title="Assign to Staff">
+              <option value="">Unassigned</option>
+              {staff?.map(s => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
           <button type="submit" className="px-4 py-2 bg-[--accent-green] text-white rounded-lg">Create Project</button>
         </form>
       )}
@@ -201,6 +222,15 @@ export const ProjectsManagement: React.FC = () => {
             <input name="clientName" value={editProject.clientName || ''} onChange={handleEditInput} placeholder="Client Name" className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" />
             <input name="budget" type="number" step="0.01" value={editProject.budget ?? ''} onChange={handleEditBudget} placeholder="Budget" className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" />
           </div>
+          <div>
+            <label className="block mb-1 font-medium">Assign to Staff</label>
+            <select name="ownerId" value={editProject.ownerId || ''} onChange={handleEditOwner} className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" title="Assign to Staff">
+              <option value="">Unassigned</option>
+              {staff?.map(s => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
           <div className="flex space-x-3">
             <button type="button" onClick={() => setEditingProject(null)} className="px-4 py-2 rounded-lg bg-[--secondary-green] hover:opacity-80">Cancel</button>
             <button type="submit" className="px-4 py-2 bg-[--primary-green] text-[--primary-foreground] rounded-lg hover:opacity-90">Save Changes</button>
@@ -234,6 +264,7 @@ export const ProjectsManagement: React.FC = () => {
 
 const ProjectCard: React.FC<{ project: Project; uploadingProjectId: number | null; setUploadingProjectId: (id: number | null) => void; onEdit: () => void; onDelete: () => void }> = ({ project, uploadingProjectId, setUploadingProjectId, onEdit, onDelete }) => {
   const attachments = useLiveQuery(() => db.attachments.where('projectId').equals(project.id as number).toArray(), [project.id]);
+  const owner = useLiveQuery(() => project.ownerId ? db.staff.get(project.ownerId) : Promise.resolve(undefined), [project.ownerId]);
   const isUploading = uploadingProjectId === project.id;
 
   const handleFiles = async (files: FileList | null) => {
@@ -271,6 +302,9 @@ const ProjectCard: React.FC<{ project: Project; uploadingProjectId: number | nul
           <h3 className="font-bold text-lg">{project.name}</h3>
           <p className="text-sm text-[--text]/70">{project.description}</p>
           <div className="text-xs text-[--text]/60 mt-1">Status: {project.status}</div>
+          {owner && (
+            <div className="text-xs text-[--text]/60 mt-1">Owner: {owner.name}</div>
+          )}
         </div>
         <div className="flex items-center space-x-2">
           <button onClick={onEdit} className="px-3 py-1 text-sm rounded bg-[--secondary-green] hover:opacity-80">Edit</button>

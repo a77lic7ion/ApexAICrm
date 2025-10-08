@@ -139,9 +139,10 @@ export const Dashboard: React.FC = () => {
                 <Tooltip contentStyle={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }} />
                 <Legend />
                 <Bar dataKey="activeProjects" name="Active Projects">
-                  {activeProjectsByStaff.map((row, i) => (
-                    <Cell key={`ap-${i}`} fill={hexWithOpacity(getStaffColor(row.staffId), 0.8)} />
-                  ))}
+                  {activeProjectsByStaff.map((row, i) => {
+                    const color = (staff || []).find(s => s.id === row.staffId)?.color || getStaffColor(row.staffId);
+                    return <Cell key={`ap-${i}`} fill={hexWithOpacity(color, 0.8)} />;
+                  })}
                 </Bar>
                 <Bar dataKey="overdue" name="Overdue Tasks" fill="#ef4444" />
               </BarChart>
@@ -160,7 +161,7 @@ export const Dashboard: React.FC = () => {
                 <Tooltip contentStyle={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }} />
                 <Legend />
                 {(staff || []).map(s => (
-                  <Bar key={`st-${s.id}`} dataKey={String(s.id)} stackId="a" name={s.name} fill={hexWithOpacity(getStaffColor(s.id as number), 0.9)} />
+                  <Bar key={`st-${s.id}`} dataKey={String(s.id)} stackId="a" name={s.name} fill={hexWithOpacity(s.color || getStaffColor(s.id as number), 0.9)} />
                 ))}
               </BarChart>
             </ResponsiveContainer>

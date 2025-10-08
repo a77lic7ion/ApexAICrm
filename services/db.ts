@@ -20,6 +20,12 @@ export class ApexCrmTaskDB extends Dexie {
       projects: '++id, name, status, startDate, endDate, clientName',
       attachments: '++id, projectId, name, type, size, createdAt',
     });
+    this.version(3).stores({
+      staff: '++id, name, email, role, *skills, isActive',
+      tasks: '++id, title, assigneeId, creatorId, projectId, status, priority, dueDate',
+      projects: '++id, name, status, startDate, endDate, clientName, ownerId',
+      attachments: '++id, projectId, name, type, size, createdAt',
+    });
   }
 }
 

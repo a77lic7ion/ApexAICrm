@@ -69,13 +69,13 @@ export const TaskManagement: React.FC = () => {
                                                   <img
                                                     src={staffMap.get(task.assigneeId)?.avatar || `https://i.pravatar.cc/100?u=${task.assigneeId}`}
                                                     alt={staffMap.get(task.assigneeId)?.name || 'Assignee'}
-                                                    className="w-6 h-6 rounded-full border-2"
+                                                    className="w-6 h-6 rounded-full border-2 object-cover object-center"
                                                     title={staffMap.get(task.assigneeId)?.name}
-                                                    style={{ borderColor: getStaffColor(task.assigneeId) }}
+                                                    style={{ borderColor: staffMap.get(task.assigneeId)?.color || getStaffColor(task.assigneeId) }}
                                                   />
                                                   <span
                                                     className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full"
-                                                    style={{ backgroundColor: getStaffColor(task.assigneeId), border: '1px solid white' }}
+                                                    style={{ backgroundColor: staffMap.get(task.assigneeId)?.color || getStaffColor(task.assigneeId), border: '1px solid white' }}
                                                   />
                                                 </div>
                                             )}

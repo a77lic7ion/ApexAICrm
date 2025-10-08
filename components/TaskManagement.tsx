@@ -67,37 +67,15 @@ export const TaskManagement: React.FC = () => {
                                             {task.assigneeId && staffMap.get(task.assigneeId) && (
                                                 <div className="relative">
                                                   <img
-                                                    src={staffMap.get(task.assigneeId)?.avatar}
-                                                    alt={staffMap.get(task.assigneeId)?.name}
-                                                    className="w-6 h-6 rounded-full border-2 avatar-border"
-                                                    title={staffMap.get(task.assigneeId)?.name}
-                                                  />
-                                                  <span
-                                                    className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full status-dot"
-                                                  />
-                                                    src={staffMap.get(task.assigneeId)?.avatar}
-                                                    alt={staffMap.get(task.assigneeId)?.name}
+                                                    src={staffMap.get(task.assigneeId)?.avatar || `https://i.pravatar.cc/100?u=${task.assigneeId}`}
+                                                    alt={staffMap.get(task.assigneeId)?.name || 'Assignee'}
                                                     className="w-6 h-6 rounded-full border-2"
                                                     title={staffMap.get(task.assigneeId)?.name}
                                                     style={{ borderColor: getStaffColor(task.assigneeId) }}
-                                                    style={{ borderColor: getStaffColor(task.assigneeId) }}
                                                   />
-
-
-
-
-
-
-
-
-
-
-
-
-
                                                   <span
                                                     className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full"
-                                                    style={{ backgroundColor: getStaffColor(task.assigneeId) }}
+                                                    style={{ backgroundColor: getStaffColor(task.assigneeId), border: '1px solid white' }}
                                                   />
                                                 </div>
                                             )}

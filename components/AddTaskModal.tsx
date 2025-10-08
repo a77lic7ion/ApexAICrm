@@ -13,7 +13,8 @@ interface AddTaskModalProps {
 }
 
 export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, mode = 'add', initialTask }) => {
-  const staff = useLiveQuery(() => db.staff.where('isActive').equals(1).toArray(), []);
+  const staff = useLiveQuery(() => db.staff.where('isActive').equals(true).toArray(), []);
+  const projects = useLiveQuery(() => db.projects.toArray(), []);
   const [task, setTask] = useState<Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'creatorId'>>({
     title: '',
     description: '',
@@ -46,6 +47,11 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, mode = 'add
   const handleAssigneeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { value } = e.target;
     setTask(prev => ({ ...prev, assigneeId: value ? parseInt(value) : undefined }));
+  };
+
+  const handleProjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { value } = e.target;
+    setTask(prev => ({ ...prev, projectId: value ? parseInt(value) : undefined }));
   };
 
   const handleSuggestAssignee = async () => {
@@ -120,19 +126,28 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, mode = 'add
                 </div>
             </div>
             <div>
+              <label className="block mb-1 font-medium">Project</label>
+              <select name="projectId" value={task.projectId || ''} onChange={handleProjectChange} className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" title="Project">
+                <option value="">No Project</option>
+                {projects?.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
               <label className="block mb-1 font-medium">Status</label>
               <select name="status" value={task.status} onChange={handleInputChange} className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" title="Status">
                 {Object.values(TaskStatus).map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
-          </div>
-           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block mb-1 font-medium">Priority</label>
               <select name="priority" value={task.priority} onChange={handleInputChange} className="w-full p-2 rounded bg-[--secondary-green] border border-[--border]" title="Priority">
                 {Object.values(TaskPriority).map(p => <option key={p} value={p}>{p}</option>)}
               </select>
             </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
             <div>
                 <label className="block mb-1 font-medium">Due Date</label>
                 <input

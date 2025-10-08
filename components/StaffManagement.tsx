@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../services/db';
 import { Staff } from '../types';
+import { getStaffColor } from './colors';
 
 export const StaffManagement: React.FC = () => {
   const staff = useLiveQuery(() => db.staff.toArray(), []);
@@ -129,7 +130,15 @@ export const StaffManagement: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {staff?.map(member => (
           <div key={member.id} className="bg-[--card] border border-[--border] rounded-lg p-4 flex items-center space-x-4">
-            <img src={member.avatar || `https://i.pravatar.cc/100?u=${member.email}`} alt={member.name} className="w-16 h-16 rounded-full" />
+            <div className="relative">
+              <img
+                src={member.avatar || `https://i.pravatar.cc/100?u=${member.email}`}
+                alt={member.name}
+                className="w-16 h-16 rounded-full border-4"
+                style={{ borderColor: getStaffColor(member.id) }}
+              />
+              <span className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full" style={{ backgroundColor: getStaffColor(member.id) }} />
+            </div>
             <div>
               <h3 className="font-bold text-lg">{member.name}</h3>
               <p className="text-sm text-[--text]/80">{member.role}</p>

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../services/db';
-import { Task, TaskStatus } from '../types';
+import { Task, TaskStatus, TaskPriority } from '../types';
+import { getStaffColor, priorityColors, hexWithOpacity } from './colors';
 import { AddTaskModal } from './AddTaskModal';
 import { CalendarIcon } from './icons';
 
@@ -64,9 +65,29 @@ export const TaskManagement: React.FC = () => {
                                     <div className="mt-3 flex items-center justify-between">
                                         <div className="flex items-center space-x-2">
                                             {task.assigneeId && staffMap.get(task.assigneeId) && (
-                                                <img src={staffMap.get(task.assigneeId)?.avatar} alt={staffMap.get(task.assigneeId)?.name} className="w-6 h-6 rounded-full" title={staffMap.get(task.assigneeId)?.name}/>
+                                                <div className="relative">
+                                                  <img
+                                                    src={staffMap.get(task.assigneeId)?.avatar}
+                                                    alt={staffMap.get(task.assigneeId)?.name}
+                                                    className="w-6 h-6 rounded-full border-2"
+                                                    title={staffMap.get(task.assigneeId)?.name}
+                                                    style={{ borderColor: getStaffColor(task.assigneeId) }}
+                                                  />
+                                                  <span
+                                                    className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full"
+                                                    style={{ backgroundColor: getStaffColor(task.assigneeId) }}
+                                                  />
+                                                </div>
                                             )}
-                                             <span className={`px-2 py-0.5 text-xs rounded-full bg-[--accent-green]/20 text-[--accent-green]`}>{task.priority}</span>
+                                            <span
+                                              className="px-2 py-0.5 text-xs rounded-full"
+                                              style={{
+                                                backgroundColor: hexWithOpacity(priorityColors[task.priority] || '#10b981', 0.2),
+                                                color: priorityColors[task.priority] || '#065f46',
+                                              }}
+                                            >
+                                              {task.priority}
+                                            </span>
                                         </div>
                                          {dueDate && (
                                             <div className={`flex items-center space-x-1 text-xs ${isPastDue ? 'text-red-500' : 'text-[--text]/60'}`}>

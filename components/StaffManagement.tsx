@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../services/db';
@@ -136,48 +135,19 @@ export const StaffManagement: React.FC = () => {
               <img
                 src={member.avatar || `https://i.pravatar.cc/100?u=${member.email}`}
                 alt={member.name}
-                className="w-16 h-16 rounded-full border-4 avatar-border"
-                data-staff-id={member.id}
-              />
-
-
-
-                src={member.avatar || `https://i.pravatar.cc/100?u=${member.email}`}
-                alt={member.name}
                 className="w-16 h-16 rounded-full border-4"
-                className="w-16 h-16 rounded-full border-4"
-style={{ borderColor: getStaffColor(member.id) }}
-
-
-
-
-
-
-
-
-
-
+                style={{ borderColor: getStaffColor(member.id) }}
               />
-
-
-
-
-
-
-
-
-
-
-
-
-
-              <span className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full staff-dot" data-staff-id={member.id} />
+              <span
+                className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full"
+                style={{ backgroundColor: getStaffColor(member.id), border: '2px solid white' }}
+              />
             </div>
             <div>
               <h3 className="font-bold text-lg">{member.name}</h3>
               <p className="text-sm text-[--text]/80">{member.role}</p>
               <p className="text-sm text-[--text]/60">{member.email}</p>
-               <div className="mt-2 flex flex-wrap gap-1">
+              <div className="mt-2 flex flex-wrap gap-1">
                 {member.skills.map(skill => (
                   <span key={skill} className="text-xs bg-[--secondary-green] px-2 py-1 rounded-full">{skill}</span>
                 ))}
